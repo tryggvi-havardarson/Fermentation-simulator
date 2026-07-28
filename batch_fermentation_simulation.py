@@ -54,7 +54,7 @@ def euler(yeast_strain, time, Xn, Sn, mu_max, dt):
         S = Sn - (dt * (mu_max * Xn * Sn)) / (Y_XS * (Ks + Sn))
 
         Xn = X
-        Sn = S
+        Sn = max(S,0)
 
         glucose_to_ethanol = (S0 - Sn) * (1 - Y_XS)
 
