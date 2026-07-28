@@ -7,3 +7,14 @@ The goal of this project is to build a fermentation simulator that models microb
 ## Current Status
 **Version:** 1.0.0
 This is the first complete release of the fermentation simulator. It models batch fermentation using a simplified kinetic model and provides visualisation of the simulation results. Future versions will expand the model with additional biological and process engineering features.
+
+## How to use
+1. Clone or download this repository.
+2. Install the required Python packages:
+   - NumPy
+   - Matplotlib
+3. Open `batch_fermentation_simulator.py`.
+4. Edit the simulation parameters in the `main()` function if you want to change the fermentation conditions.
+5. Run the script.
+6. The program will display a graph of the fermentation profile and print a summary of the simulation results.
+
