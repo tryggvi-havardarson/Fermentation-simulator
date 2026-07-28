@@ -1,2 +1,3 @@
-# Fermentation-simulator
-Batch fermentation simulator built in python for chemical engineering and process modeling.
+# Fermentation simulator
+A Python-based batch fermentation simulator for chemical engineering, process modeling, and biochemical reaction simulation.
+
