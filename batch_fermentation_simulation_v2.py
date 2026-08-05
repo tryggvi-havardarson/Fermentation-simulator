@@ -20,53 +20,6 @@ chemicals = {
 }
 
 
-def draw_fermentation_graph(
-    biomass_concentration,
-    sugar_concentration,
-    ethanol_concentration,
-    dt,
-):
-
-    time = np.arange(len(biomass_concentration)) * dt
-    biomass_concentration = np.asarray(biomass_concentration)
-    sugar_concentration = np.asarray(sugar_concentration)
-    ethanol_concentration = np.asarray(ethanol_concentration)
-
-    fig, ax = plt.subplots(figsize=(11, 6))
-
-    ax.plot(
-        time,
-        biomass_concentration,
-        linewidth=2.2,
-        label="Biomass Concentration",
-    )
-    ax.plot(
-        time,
-        sugar_concentration,
-        linewidth=2.2,
-        label="Sugar Concentration",
-    )
-    ax.plot(
-        time,
-        ethanol_concentration,
-        linewidth=2.2,
-        label="Ethanol Concentration",
-    )
-
-    ax.set_title("Fermentation Process Profile", fontsize=15, fontweight="bold")
-    ax.set_xlabel("Fermentation time (h)")
-    ax.set_ylabel("Concentration (g/L)")
-
-    ax.grid(True, linestyle="--", alpha=0.35)
-    ax.legend()
-    ax.margins(x=0)
-    fig.tight_layout()
-
-    plt.show()
-
-    return fig, ax
-
-
 def celsius_to_kelvin(temperature_in_celsius):
     return temperature_in_celsius + 273.15
 
@@ -113,6 +66,7 @@ class Fermentation:
         self.biomass = biomass
         self.time = time
         self.dt = float(0.001)
+        self.duration_time = 0
 
     def mass_to_concentration(self, mass) -> float:
         return mass / self.reactor.volume
@@ -181,13 +135,58 @@ class Fermentation:
         biomass_concentration = self.mass_to_concentration(self.biomass)
         mu_max = self.mu_max_function()
 
-        biomass_concentration, sugar_concentration, ethanol_concentration, self.time = (
-            self.euler(biomass_concentration, sugar_concentration, mu_max)
+        (
+            self.biomass_concentration,
+            self.sugar_concentration,
+            self.ethanol_concentration,
+            self.duration_time,
+        ) = self.euler(biomass_concentration, sugar_concentration, mu_max)
+
+    def draw_fermentation_graph(self):
+
+        biomass_concentration = self.biomass_concentration
+        sugar_concentration = self.sugar_concentration
+        ethanol_concentration = self.ethanol_concentration
+        dt = self.dt
+
+        time = np.arange(len(biomass_concentration)) * dt
+        biomass_concentration = np.asarray(biomass_concentration)
+        sugar_concentration = np.asarray(sugar_concentration)
+        ethanol_concentration = np.asarray(ethanol_concentration)
+
+        fig, ax = plt.subplots(figsize=(11, 6))
+
+        ax.plot(
+            time,
+            biomass_concentration,
+            linewidth=2.2,
+            label="Biomass Concentration",
+        )
+        ax.plot(
+            time,
+            sugar_concentration,
+            linewidth=2.2,
+            label="Sugar Concentration",
+        )
+        ax.plot(
+            time,
+            ethanol_concentration,
+            linewidth=2.2,
+            label="Ethanol Concentration",
         )
 
-        draw_fermentation_graph(
-            biomass_concentration, sugar_concentration, ethanol_concentration, self.dt
-        )
+        ax.set_title("Fermentation Process Profile", fontsize=15, fontweight="bold")
+        ax.set_xlabel("Fermentation time (h)")
+        ax.set_ylabel("Concentration (g/L)")
+
+        ax.grid(True, linestyle="--", alpha=0.35)
+        ax.legend()
+        ax.margins(x=0)
+        fig.tight_layout()
+
+        plt.show()
+
+        return fig, ax
 
     def print_status(self) -> None:
         print(f"""----- Fermentation Simulator -----
@@ -206,7 +205,7 @@ Optimum temperature: {self.yeast.optimum_temperature} °C
 Initial sugar: {self.sugar} g
 Initial biomass: {self.biomass} g
 
-Time: {self.time} hours
+Duration time: {self.duration_time} hours
         """)
 
 
@@ -214,7 +213,8 @@ yeast1 = Yeast("Saccharomyces cerevisiae", 0.45, 0.1, 30, 25, 50000, 0.1)
 
 reactor1 = Reactor(20, 25, 7)
 
-fermentation1 = Fermentation(reactor1, yeast1, 100, 5, 5)
+fermentation1 = Fermentation(reactor1, yeast1, 1000, 50, 5)
 
 fermentation1.run()
+fermentation1.draw_fermentation_graph()
 fermentation1.print_status()
