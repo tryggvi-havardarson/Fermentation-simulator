@@ -20,15 +20,10 @@ chemicals = {
 }
 
 
-def celsius_to_kelvin(temperature_in_celsius):
-    return temperature_in_celsius + 273.15
-
-
 class Reactor:
-    def __init__(self, volume: float, T_set: float, ph: float) -> None:
+    def __init__(self, volume: float, T_set: float) -> None:
         self.volume = volume
         self.T_set = T_set
-        self.ph = ph
 
 
 class Yeast:
@@ -51,15 +46,26 @@ class Yeast:
 
 class FermentationSimulator:
     def __init__(
-        self, reactor: Reactor, yeast: Yeast, sugar: float, biomass: float, time: float
+        self,
+        reactor: Reactor,
+        yeast: Yeast,
+        sugar: float,
+        biomass: float,
+        simulation_time: float,
     ) -> None:
         self.reactor = reactor
         self.yeast = yeast
         self.sugar = sugar
         self.biomass = biomass
-        self.time = time
+        self.simulation_time = simulation_time
+
         self.dt = 0.001
         self.duration_time = 0
+
+        self.mu_max = None
+        self.biomass_concentration = None
+        self.sugar_concentration = None
+        self.ethanol_concentration = None
 
     def mass_to_concentration(self, mass: float) -> float:
         return mass / self.reactor.volume
@@ -95,7 +101,7 @@ class FermentationSimulator:
         Ks = self.yeast.Ks
         Y_XS = self.yeast.Y_xs
         dt = self.dt
-        time = self.time
+        time = self.simulation_time
         En = 0
         S0 = Sn
         count = 0
@@ -200,7 +206,6 @@ class FermentationSimulator:
 Reactor
 Volume: {self.reactor.volume} L
 Temperature: {self.reactor.T_set} °C
-pH: {self.reactor.ph}
 
 Yeast
 Name: {self.yeast.name}
@@ -216,7 +221,7 @@ Duration time: {self.duration_time} hours
 
 yeast1 = Yeast("yeast_proxy")
 
-reactor1 = Reactor(20, 32, 7)
+reactor1 = Reactor(20, 32)
 
 fermentation1 = FermentationSimulator(reactor1, yeast1, 1000, 50, 5)
 
