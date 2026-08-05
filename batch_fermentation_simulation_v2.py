@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 yeast_database = {
     "yeast_proxy": {
@@ -139,9 +139,7 @@ class FermentationSimulator:
             count * dt,
         )
 
-    def run(self) -> None:
-
-        print("Simulation is now running")
+    def prepare(self):
 
         sugar_concentration = self.mass_to_concentration(self.sugar)
         biomass_concentration = self.mass_to_concentration(self.biomass)
@@ -202,7 +200,6 @@ class FermentationSimulator:
 
     def print_status(self) -> None:
         print(f"""----- Fermentation Simulator -----
-
 Reactor
 Volume: {self.reactor.volume} L
 Temperature: {self.reactor.T_set} °C
@@ -218,13 +215,17 @@ Initial biomass: {self.biomass} g
 Duration time: {self.duration_time} hours
         """)
 
+    def run(self) -> None:
+        print("Simulation is now running")
+
+        self.prepare()
+        self.draw_fermentation_graph()
+        self.print_status()
+
 
 yeast1 = Yeast("yeast_proxy")
-
 reactor1 = Reactor(20, 32)
 
 fermentation1 = FermentationSimulator(reactor1, yeast1, 1000, 50, 5)
 
 fermentation1.run()
-fermentation1.draw_fermentation_graph()
-fermentation1.print_status()
