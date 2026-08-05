@@ -1,14 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-yeast_strains = {
+yeast_database = {
     "CBS 8066": {
-        "mu_reference": 0.31,  # h^-1
-        "temperature_reference": 25,  # °C
-        "activation_energy": 50000,  # J/mol
+        "mu_ref": 0.31,  # h^-1
         "Ks": 0.099,  # g/L assuming glucose
-        "Y_X/S": 0.10,  # g biomass / g glucose
-        "maximum_temperature": 40,  # °C
+        "T_ref": 25,  # °C
+        "Ea": 50000,  # J/mol
+        "Y_xs": 0.10,  # g biomass / g glucose
     }
 }
 
@@ -32,28 +31,29 @@ class Reactor:
 
 
 class Yeast:
-    def __init__(
-        self,
-        name: str,
-        mu_ref: float,
-        Ks: float,
-        optimum_temperature: float,
-        T_ref: float,
-        Ea: float,
-        Y_xs: float,
-    ) -> None:
+    def __init__(self, name: str) -> None:
+
+        if name not in yeast_database:
+            raise ValueError(f"Unknown yeast strain: {name}")
+
+        data = yeast_database[name]
+
         self.name = name
-        self.mu_ref = mu_ref
-        self.Ks = Ks
-        self.optimum_temperature = optimum_temperature
-        self.T_ref = T_ref
-        self.Ea = Ea
-        self.Y_xs = Y_xs
+        self.mu_ref = data["mu_ref"]
+        self.Ks = data["Ks"]
+        self.T_ref = data["T_ref"]
+        self.Ea = data["Ea"]
+        self.Y_xs = data["Y_xs"]
 
-    def set_optimum_temperature(self, new_temperature) -> None:
-        self.optimum_temperature = new_temperature
-
-        print(f"Temperature has been set to {self.optimum_temperature}")
+    def summary(self):
+        print(f"""
+name: {self.name}
+mu_ref: {self.mu_ref}
+Ks: {self.Ks}
+T_red: {self.T_ref}
+Ea: {self.Ea}
+Y_xs: {self.Y_xs}
+        """)
 
 
 class Fermentation:
@@ -200,7 +200,6 @@ Yeast
 Name: {self.yeast.name}
 μmax: {self.yeast.mu_ref} h⁻¹
 Ks: {self.yeast.Ks} g/L
-Optimum temperature: {self.yeast.optimum_temperature} °C
 
 Initial sugar: {self.sugar} g
 Initial biomass: {self.biomass} g
@@ -209,7 +208,7 @@ Duration time: {self.duration_time} hours
         """)
 
 
-yeast1 = Yeast("Saccharomyces cerevisiae", 0.45, 0.1, 30, 25, 50000, 0.1)
+yeast1 = Yeast("CBS 8066")
 
 reactor1 = Reactor(20, 25, 7)
 
