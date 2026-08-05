@@ -2,12 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 yeast_database = {
-    "CBS 8066": {
-        "mu_ref": 0.31,  # h^-1
-        "Ks": 0.099,  # g/L assuming glucose
-        "T_ref": 25,  # °C
-        "Ea": 50000,  # J/mol
-        "Y_xs": 0.10,  # g biomass / g glucose
+    "yeast_proxy": {
+        "Ks": 0.18,  # g/L glucose
+        "Y_xs": 0.097,  # g dry biomass / g glucose
+        "T_min": 3.08,  # °C
+        "T_opt": 30.03,  # °C
+        "T_max": 41.21,  # °C
+        "mu_opt": 0.368,  # h^-1
     }
 }
 
@@ -39,21 +40,13 @@ class Yeast:
         data = yeast_database[name]
 
         self.name = name
-        self.mu_ref = data["mu_ref"]
-        self.Ks = data["Ks"]
-        self.T_ref = data["T_ref"]
-        self.Ea = data["Ea"]
-        self.Y_xs = data["Y_xs"]
 
-    def summary(self):
-        print(f"""
-name: {self.name}
-mu_ref: {self.mu_ref}
-Ks: {self.Ks}
-T_red: {self.T_ref}
-Ea: {self.Ea}
-Y_xs: {self.Y_xs}
-        """)
+        self.Ks = data["Ks"]
+        self.Y_xs = data["Y_xs"]
+        self.T_min = data["T_min"]
+        self.T_opt = data["T_opt"]
+        self.T_max = data["T_max"]
+        self.mu_opt = data["mu_opt"]
 
 
 class FermentationSimulator:
@@ -65,20 +58,33 @@ class FermentationSimulator:
         self.sugar = sugar
         self.biomass = biomass
         self.time = time
-        self.dt = float(0.001)
+        self.dt = 0.001
         self.duration_time = 0
 
     def mass_to_concentration(self, mass: float) -> float:
         return mass / self.reactor.volume
 
-    def mu_max_function(self) -> float:
-        R = 8.314
-        T_ref_kelvin = celsius_to_kelvin(self.yeast.T_ref)
-        T_set_kelvin = celsius_to_kelvin(self.reactor.T_set)
+    def rosso_cardinal(self) -> float:
+        if (
+            self.reactor.T_set < self.yeast.T_min
+            or self.reactor.T_set > self.yeast.T_max
+        ):
+            mu_max = 0
+        else:
+            mu_max = (
+                (self.yeast.mu_opt * (self.reactor.T_set - self.yeast.T_max))
+                * (self.reactor.T_set - self.yeast.T_min) ** 2
+            ) / (
+                (self.yeast.T_opt - self.yeast.T_min)
+                * (
+                    (self.yeast.T_opt - self.yeast.T_min)
+                    * (self.reactor.T_set - self.yeast.T_opt)
+                    - (self.yeast.T_opt - self.yeast.T_max)
+                    * (self.yeast.T_opt + self.yeast.T_min - 2 * self.reactor.T_set)
+                )
+            )
 
-        return self.yeast.mu_ref * (
-            np.exp((self.yeast.Ea / R) * ((1 / T_ref_kelvin) - (1 / T_set_kelvin)))
-        )
+        return mu_max
 
     def euler(
         self,
@@ -133,7 +139,7 @@ class FermentationSimulator:
 
         sugar_concentration = self.mass_to_concentration(self.sugar)
         biomass_concentration = self.mass_to_concentration(self.biomass)
-        self.mu_max = self.mu_max_function()
+        self.mu_max = self.rosso_cardinal()
 
         (
             self.biomass_concentration,
@@ -208,9 +214,9 @@ Duration time: {self.duration_time} hours
         """)
 
 
-yeast1 = Yeast("CBS 8066")
+yeast1 = Yeast("yeast_proxy")
 
-reactor1 = Reactor(20, 25, 7)
+reactor1 = Reactor(20, 32, 7)
 
 fermentation1 = FermentationSimulator(reactor1, yeast1, 1000, 50, 5)
 
