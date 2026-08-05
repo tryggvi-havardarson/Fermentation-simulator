@@ -22,6 +22,9 @@ chemicals = {
 
 class Reactor:
     def __init__(self, volume: float, T_set: float) -> None:
+        if volume <= 0:
+            raise ValueError("Reactor volume must be greater than zero.")
+
         self.volume = volume
         self.T_set = T_set
 
@@ -49,13 +52,22 @@ class FermentationSimulator:
         self,
         reactor: Reactor,
         yeast: Yeast,
-        sugar: float,
+        sugar_mass: float,
         biomass: float,
         simulation_time: float,
     ) -> None:
+        if sugar_mass < 0:
+            raise ValueError("Sugar mass cannot be negative.")
+
+        if biomass < 0:
+            raise ValueError("Biomass cannot be negative.")
+
+        if simulation_time <= 0:
+            raise ValueError("Simulation time must be greater then zero.")
+
         self.reactor = reactor
         self.yeast = yeast
-        self.sugar = sugar
+        self.sugar_mass = sugar_mass
         self.biomass = biomass
         self.simulation_time = simulation_time
 
@@ -97,7 +109,7 @@ class FermentationSimulator:
         Xn,
         Sn,
         mu_max,
-    ):
+    ) -> tuple:
         Ks = self.yeast.Ks
         Y_XS = self.yeast.Y_xs
         dt = self.dt
@@ -139,9 +151,9 @@ class FermentationSimulator:
             count * dt,
         )
 
-    def prepare(self):
+    def prepare(self) -> None:
 
-        sugar_concentration = self.mass_to_concentration(self.sugar)
+        sugar_concentration = self.mass_to_concentration(self.sugar_mass)
         biomass_concentration = self.mass_to_concentration(self.biomass)
         self.mu_max = self.rosso_cardinal()
 
@@ -152,7 +164,7 @@ class FermentationSimulator:
             self.duration_time,
         ) = self.euler(biomass_concentration, sugar_concentration, self.mu_max)
 
-    def draw_fermentation_graph(self):
+    def draw_fermentation_graph(self) -> tuple:
 
         biomass_concentration = self.biomass_concentration
         sugar_concentration = self.sugar_concentration
@@ -206,13 +218,14 @@ Temperature: {self.reactor.T_set} °C
 
 Yeast
 Name: {self.yeast.name}
-μmax: {self.mu_max} h⁻¹
+μmax: {round(self.mu_max, ndigits=3)} h⁻¹
 Ks: {self.yeast.Ks} g/L
 
-Initial sugar: {self.sugar} g
+Initial sugar: {self.sugar_mass} g
 Initial biomass: {self.biomass} g
 
-Duration time: {self.duration_time} hours
+Requested time: {self.simulation_time} hours
+Duration time: {round(self.duration_time, ndigits=2)} hours
         """)
 
     def run(self) -> None:
