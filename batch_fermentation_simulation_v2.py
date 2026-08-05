@@ -56,7 +56,7 @@ Y_xs: {self.Y_xs}
         """)
 
 
-class Fermentation:
+class FermentationSimulator:
     def __init__(
         self, reactor: Reactor, yeast: Yeast, sugar: float, biomass: float, time: float
     ) -> None:
@@ -68,7 +68,7 @@ class Fermentation:
         self.dt = float(0.001)
         self.duration_time = 0
 
-    def mass_to_concentration(self, mass) -> float:
+    def mass_to_concentration(self, mass: float) -> float:
         return mass / self.reactor.volume
 
     def mu_max_function(self) -> float:
@@ -133,14 +133,14 @@ class Fermentation:
 
         sugar_concentration = self.mass_to_concentration(self.sugar)
         biomass_concentration = self.mass_to_concentration(self.biomass)
-        mu_max = self.mu_max_function()
+        self.mu_max = self.mu_max_function()
 
         (
             self.biomass_concentration,
             self.sugar_concentration,
             self.ethanol_concentration,
             self.duration_time,
-        ) = self.euler(biomass_concentration, sugar_concentration, mu_max)
+        ) = self.euler(biomass_concentration, sugar_concentration, self.mu_max)
 
     def draw_fermentation_graph(self):
 
@@ -198,7 +198,7 @@ pH: {self.reactor.ph}
 
 Yeast
 Name: {self.yeast.name}
-μmax: {self.yeast.mu_ref} h⁻¹
+μmax: {self.mu_max} h⁻¹
 Ks: {self.yeast.Ks} g/L
 
 Initial sugar: {self.sugar} g
@@ -212,7 +212,7 @@ yeast1 = Yeast("CBS 8066")
 
 reactor1 = Reactor(20, 25, 7)
 
-fermentation1 = Fermentation(reactor1, yeast1, 1000, 50, 5)
+fermentation1 = FermentationSimulator(reactor1, yeast1, 1000, 50, 5)
 
 fermentation1.run()
 fermentation1.draw_fermentation_graph()
