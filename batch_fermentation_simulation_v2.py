@@ -104,16 +104,7 @@ class FermentationSimulator:
 
         return mu_max
 
-    def euler(
-        self,
-        Xn,
-        Sn,
-        mu_max,
-    ) -> tuple:
-        Ks = self.yeast.Ks
-        Y_XS = self.yeast.Y_xs
-        dt = self.dt
-        time = self.simulation_time
+    def euler(self, Xn, Sn, mu_max) -> tuple:
         En = 0
         S0 = Sn
         count = 0
@@ -121,14 +112,17 @@ class FermentationSimulator:
         biomass = [Xn]
         sugar_concentration = [Sn]
         ethanol_concentration = [En]
-        while count < (time / dt) and Sn > 1e-9:
-            X = Xn + (dt * (Xn * mu_max * Sn)) / (Ks + Sn)
-            S = Sn - (dt * (mu_max * Xn * Sn)) / (Y_XS * (Ks + Sn))
+
+        while count < (self.simulation_time / self.dt) and Sn > 1e-9:
+            X = Xn + (self.dt * (Xn * mu_max * Sn)) / (self.yeast.Ks + Sn)
+            S = Sn - (self.dt * (mu_max * Xn * Sn)) / (
+                self.yeast.Y_xs * (self.yeast.Ks + Sn)
+            )
 
             Xn = X
             Sn = max(S, 0)
 
-            glucose_to_ethanol = (S0 - Sn) * (1 - Y_XS)
+            glucose_to_ethanol = (S0 - Sn) * (1 - self.yeast.Y_xs)
 
             En = (
                 2
@@ -138,6 +132,7 @@ class FermentationSimulator:
                     / chemicals["glucose"]["molar_mass"]
                 )
             )
+
             biomass.append(Xn)
             sugar_concentration.append(Sn)
             ethanol_concentration.append(En)
@@ -148,7 +143,7 @@ class FermentationSimulator:
             np.array(biomass),
             np.array(sugar_concentration),
             np.array(ethanol_concentration),
-            count * dt,
+            count * self.dt,
         )
 
     def prepare(self) -> None:
@@ -166,33 +161,25 @@ class FermentationSimulator:
 
     def draw_fermentation_graph(self) -> tuple:
 
-        biomass_concentration = self.biomass_concentration
-        sugar_concentration = self.sugar_concentration
-        ethanol_concentration = self.ethanol_concentration
-        dt = self.dt
-
-        time = np.arange(len(biomass_concentration)) * dt
-        biomass_concentration = np.asarray(biomass_concentration)
-        sugar_concentration = np.asarray(sugar_concentration)
-        ethanol_concentration = np.asarray(ethanol_concentration)
+        time_array = np.arange(len(self.biomass_concentration)) * self.dt
 
         fig, ax = plt.subplots(figsize=(11, 6))
 
         ax.plot(
-            time,
-            biomass_concentration,
+            time_array,
+            self.biomass_concentration,
             linewidth=2.2,
             label="Biomass Concentration",
         )
         ax.plot(
-            time,
-            sugar_concentration,
+            time_array,
+            self.sugar_concentration,
             linewidth=2.2,
             label="Sugar Concentration",
         )
         ax.plot(
-            time,
-            ethanol_concentration,
+            time_array,
+            self.ethanol_concentration,
             linewidth=2.2,
             label="Ethanol Concentration",
         )
