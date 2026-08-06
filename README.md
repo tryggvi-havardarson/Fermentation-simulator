@@ -1,36 +1,61 @@
-# Fermentation simulator
+# Fermentation Simulator
 
 A Python-based batch fermentation simulator for chemical engineering, process modeling, and biochemical reaction simulation.
 
 ## Project Goal
 
-The goal of this project is to build a fermentation simulator that models microbial growth and product formation in a batch bioreactor. As the project develops, the simulator will incorporate more realistic biological and engineering phenomena while serving as a tool to strengthen my Python programming and chemical engineering modelling skills.
+The goal of this project is to build a fermentation simulator that models microbial growth and product formation in a batch bioreactor. As the project develops, the simulator will incorporate more realistic biological and engineering phenomena while serving as a tool to strengthen my Python programming and chemical engineering modeling skills.
 
 ## Current Status
 
-**Version:** 1.0.0
-This is the first complete release of the fermentation simulator. It models batch fermentation using a simplified kinetic model and provides visualisation of the simulation results. Future versions will expand the model with additional biological and process engineering features.
+This project is being developed in multiple versions, with each version focusing on improving both the simulator and my understanding of Python and fermentation modeling.
 
-## How to use
+### Version 1
+
+- Procedural Python implementation.
+- Monod growth kinetics.
+- Euler numerical integration.
+- Biomass, glucose, ethanol, and carbon dioxide prediction.
+- Fermentation profile visualization.
+- Component mass balance.
+
+### Version 2
+
+- Object-oriented redesign.
+- Rosso cardinal temperature model.
+- Yeast strain database.
+- Improved project structure and code organization.
+- Input validation.
+- Modular simulation workflow.
+
+### Planned Version 3
+
+- More realistic fermentation kinetics.
+- Improved reactor modeling.
+- Better biological assumptions.
+- Additional process engineering features.
+
+## How to Use
 
 1. Clone or download this repository.
 2. Install the required Python packages:
    - NumPy
    - Matplotlib
-3. Open `batch_fermentation_simulator.py`.
-4. Edit the simulation parameters in the `main()` function if you want to change the fermentation conditions.
-5. Run the script.
-6. The program will display a graph of the fermentation profile and print a summary of the simulation results.
+3. Open `main.py`.
+4. Edit the simulation parameters.
+5. Run the program.
+6. The simulator will display the fermentation profile and print a simulation summary, including a component mass balance.
 
-## Assumptions
+## Current Assumptions
 
 - Batch fermentation.
 - Well-mixed bioreactor.
-- Constant temperature throughout the bioreactor.
+- Constant reactor temperature.
+- Constant reactor volume.
 
-## Limitations
+## Current Limitations
 
-- Supports one yeast strain (CBS 8066).
-- Uses a simplified kinetic model that does not account for thermal inactivation.
+- Uses simplified fermentation kinetics.
+- Uses proxy yeast parameters.
 - Simulation parameters must be edited directly in the source code.
-- Does not account for pH, dissolved gases, temperature changes during fermentation, contamination, or nutrient limitations.
+- Does not account for pH, dissolved gases, nutrient limitations, contamination, maintenance metabolism, or changing reactor conditions.
