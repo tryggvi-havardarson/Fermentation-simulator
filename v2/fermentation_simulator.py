@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
 import database
-
+import kinetics
+import numpy as np
+import plotting
 from reactor import Reactor
 from yeast import Yeast
 
-chemicals =database.chemicals
+chemicals = database.chemicals
+
 
 class FermentationSimulator:
     def __init__(
@@ -42,28 +42,6 @@ class FermentationSimulator:
 
     def mass_to_concentration(self, mass: float) -> float:
         return mass / self.reactor.volume
-
-    def rosso_cardinal(self) -> float:
-        if (
-            self.reactor.T_set < self.yeast.T_min
-            or self.reactor.T_set > self.yeast.T_max
-        ):
-            mu_max = 0
-        else:
-            mu_max = (
-                (self.yeast.mu_opt * (self.reactor.T_set - self.yeast.T_max))
-                * (self.reactor.T_set - self.yeast.T_min) ** 2
-            ) / (
-                (self.yeast.T_opt - self.yeast.T_min)
-                * (
-                    (self.yeast.T_opt - self.yeast.T_min)
-                    * (self.reactor.T_set - self.yeast.T_opt)
-                    - (self.yeast.T_opt - self.yeast.T_max)
-                    * (self.yeast.T_opt + self.yeast.T_min - 2 * self.reactor.T_set)
-                )
-            )
-
-        return mu_max
 
     def euler(self, Xn: float, Sn: float, mu_max: float) -> tuple:
         En = 0
@@ -111,7 +89,13 @@ class FermentationSimulator:
 
         sugar_concentration = self.mass_to_concentration(self.sugar_mass)
         biomass_concentration = self.mass_to_concentration(self.biomass_mass)
-        self.mu_max = self.rosso_cardinal()
+        self.mu_max = kinetics.rosso_cardinal(
+            self.reactor.T_set,
+            self.yeast.T_min,
+            self.yeast.T_max,
+            self.yeast.T_opt,
+            self.yeast.mu_opt,
+        )
 
         (
             self.biomass_concentration,
@@ -120,43 +104,6 @@ class FermentationSimulator:
             self.fermentation_time,
         ) = self.euler(biomass_concentration, sugar_concentration, self.mu_max)
 
-    def draw_fermentation_graph(self) -> tuple:
-
-        time_array = np.arange(len(self.biomass_concentration)) * self.dt
-
-        fig, ax = plt.subplots(figsize=(11, 6))
-
-        ax.plot(
-            time_array,
-            self.biomass_concentration,
-            linewidth=2.2,
-            label="Biomass Concentration",
-        )
-        ax.plot(
-            time_array,
-            self.sugar_concentration,
-            linewidth=2.2,
-            label="Sugar Concentration",
-        )
-        ax.plot(
-            time_array,
-            self.ethanol_concentration,
-            linewidth=2.2,
-            label="Ethanol Concentration",
-        )
-
-        ax.set_title("Fermentation Process Profile", fontsize=15, fontweight="bold")
-        ax.set_xlabel("Fermentation time (h)")
-        ax.set_ylabel("Concentration (g/L)")
-
-        ax.grid(True, linestyle="--", alpha=0.35)
-        ax.legend()
-        ax.margins(x=0)
-        fig.tight_layout()
-
-        plt.show()
-
-        return fig, ax
 
     def print_status(self) -> None:
         print(f"""
@@ -199,5 +146,5 @@ class FermentationSimulator:
         print("Simulation is now running")
 
         self.prepare()
-        self.draw_fermentation_graph()
+        plotting.draw_fermentation_graph(self.dt,self.biomass_concentration,self.sugar_concentration,self.ethanol_concentration)
         self.print_status()
