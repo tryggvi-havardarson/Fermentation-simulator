@@ -211,19 +211,17 @@ class FermentationSimulator:
 
         Yeast
         ----------------------------------------------------------------------
-        Strain                : {self.yeast}
+        Strain                : {self.yeast.name}
         Maximum growth (μmax) : {self.mu_max:.3f} h⁻¹
         Ks                    : {self.yeast.Ks} g/L
 
 
         Simulation
         ----------------------------------------------------------------------
-        Initial sugar         : {self.sugar_mass:.2f} g
-        Initial biomass       : {self.biomass_mass:.2f} g
         Requested time        : {self.simulation_time:.2f} h
         Fermentation time     : {self.fermentation_time:.2f} h
-        Sugar conversion      : {(1 - self.sugar_concentration[-1] / self.sugar_concentration[-1]) * 100:.1f} %
-        
+        Sugar conversion      : {((self.sugar_mass - self.sugar_concentration[-1]) / self.sugar_mass) * 100:.1f} %
+
 
         Component Mass Balance
         ----------------------------------------------------------------------
