@@ -53,26 +53,26 @@ class FermentationSimulator:
         reactor: Reactor,
         yeast: Yeast,
         sugar_mass: float,
-        biomass: float,
+        biomass_mass: float,
         simulation_time: float,
     ) -> None:
         if sugar_mass < 0:
             raise ValueError("Sugar mass cannot be negative.")
 
-        if biomass < 0:
+        if biomass_mass < 0:
             raise ValueError("Biomass cannot be negative.")
 
         if simulation_time <= 0:
-            raise ValueError("Simulation time must be greater then zero.")
+            raise ValueError("Simulation time must be greater than zero.")
 
         self.reactor = reactor
         self.yeast = yeast
         self.sugar_mass = sugar_mass
-        self.biomass = biomass
+        self.biomass_mass = biomass_mass
         self.simulation_time = simulation_time
 
         self.dt = 0.001
-        self.duration_time = 0
+        self.fermentation_time = 0
 
         self.mu_max = None
         self.biomass_concentration = None
@@ -104,12 +104,12 @@ class FermentationSimulator:
 
         return mu_max
 
-    def euler(self, Xn, Sn, mu_max) -> tuple:
+    def euler(self, Xn: float, Sn: float, mu_max: float) -> tuple:
         En = 0
         S0 = Sn
         count = 0
 
-        biomass = [Xn]
+        biomass_mass = [Xn]
         sugar_concentration = [Sn]
         ethanol_concentration = [En]
 
@@ -133,14 +133,14 @@ class FermentationSimulator:
                 )
             )
 
-            biomass.append(Xn)
+            biomass_mass.append(Xn)
             sugar_concentration.append(Sn)
             ethanol_concentration.append(En)
 
             count += 1
 
         return (
-            np.array(biomass),
+            np.array(biomass_mass),
             np.array(sugar_concentration),
             np.array(ethanol_concentration),
             count * self.dt,
@@ -149,14 +149,14 @@ class FermentationSimulator:
     def prepare(self) -> None:
 
         sugar_concentration = self.mass_to_concentration(self.sugar_mass)
-        biomass_concentration = self.mass_to_concentration(self.biomass)
+        biomass_concentration = self.mass_to_concentration(self.biomass_mass)
         self.mu_max = self.rosso_cardinal()
 
         (
             self.biomass_concentration,
             self.sugar_concentration,
             self.ethanol_concentration,
-            self.duration_time,
+            self.fermentation_time,
         ) = self.euler(biomass_concentration, sugar_concentration, self.mu_max)
 
     def draw_fermentation_graph(self) -> tuple:
@@ -198,21 +198,42 @@ class FermentationSimulator:
         return fig, ax
 
     def print_status(self) -> None:
-        print(f"""----- Fermentation Simulator -----
-Reactor
-Volume: {self.reactor.volume} L
-Temperature: {self.reactor.T_set} °C
+        print(f"""
+        ======================================================================
+                                FERMENTATION SIMULATION
+        ======================================================================
 
-Yeast
-Name: {self.yeast.name}
-μmax: {round(self.mu_max, ndigits=3)} h⁻¹
-Ks: {self.yeast.Ks} g/L
+        Reactor
+        ----------------------------------------------------------------------
+        Volume                : {self.reactor.volume} L
+        Temperature           : {self.reactor.T_set} °C
 
-Initial sugar: {self.sugar_mass} g
-Initial biomass: {self.biomass} g
 
-Requested time: {self.simulation_time} hours
-Duration time: {round(self.duration_time, ndigits=2)} hours
+        Yeast
+        ----------------------------------------------------------------------
+        Strain                : {self.yeast}
+        Maximum growth (μmax) : {self.mu_max:.3f} h⁻¹
+        Ks                    : {self.yeast.Ks} g/L
+
+
+        Simulation
+        ----------------------------------------------------------------------
+        Initial sugar         : {self.sugar_mass:.2f} g
+        Initial biomass       : {self.biomass_mass:.2f} g
+        Requested time        : {self.simulation_time:.2f} h
+        Fermentation time     : {self.fermentation_time:.2f} h
+        Sugar conversion      : {(1 - self.sugar_concentration[-1] / self.sugar_concentration[-1]) * 100:.1f} %
+        
+
+        Component Mass Balance
+        ----------------------------------------------------------------------
+        Component              Initial (g)        Final (g)
+        ----------------------------------------------------------------------
+        Biomass             {self.biomass_mass:12.2f}   {self.reactor.volume * self.biomass_concentration[-1]:12.2f}
+        Sugar               {self.sugar_mass:12.2f}   {self.reactor.volume * self.sugar_concentration[-1]:12.2f}
+        Ethanol             {0:12.2f}   {self.reactor.volume * self.ethanol_concentration[-1]:12.2f}
+        Carbon dioxide      {0:12.2f}   {((self.reactor.volume * self.ethanol_concentration[-1]) / (chemicals["ethanol"]["molar_mass"])) * chemicals["carbon_dioxide"]["molar_mass"]:12.2f}
+        ----------------------------------------------------------------------
         """)
 
     def run(self) -> None:
