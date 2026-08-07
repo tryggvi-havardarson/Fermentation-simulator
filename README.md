@@ -28,12 +28,18 @@ This project is being developed in multiple versions, with each version focusing
 - Input validation.
 - Modular simulation workflow.
 
-### Planned Version 3
+## Planned Version 3
 
-- More realistic fermentation kinetics.
-- Improved reactor modeling.
-- Better biological assumptions.
-- Additional process engineering features.
+- ABV, specific gravity (SG), and Brix calculations.
+- Feedstock database with sugar composition.
+- Nutrient availability model.
+- Target batch calculator (volume, feedstock, and target ABV).
+- CO₂ production and fermenter weight calculations.
+- Unit conversion tools.
+- Process flow diagram.
+- Fermentation heat generation model.
+- Improved biological realism through growth-phase modeling.
+
 
 ## How to Use
 
